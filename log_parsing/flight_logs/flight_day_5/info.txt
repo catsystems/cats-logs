@@ -1,0 +1,13 @@
+flight 1: Normal - KF tuning with calculated Values
+flight 2: Normal - KF tuning with calculated Values
+flight 3: Normal - KF tuning with calculated Values
+flight 4: Flipping- KF tuning with calculated Values
+flight 5: Normal - KF tuning with larger baro and acc tuning values
+flight 6: Normal - KF tuning with larger baro and acc tuning values
+flight 7: Double Flipping - KF tuning with larger baro and acc tuning values
+flight 8: Very High (Normal)- KF tuning with larger baro and acc tuning values
+flight 9: Normal - KF tuning with larger baro values and acc calculated values
+flight 10: Normal - KF tuning with larger baro values and acc calculated values
+flight 11: Stop-Go - KF tuning with larger baro values and acc calculated values
+flight 12: Slow - High - KF tuning with larger baro values and acc calculated values
+flight 13: Normal - KF tuning with larger baro values and acc calculated values
