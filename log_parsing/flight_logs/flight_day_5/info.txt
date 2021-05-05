@@ -1,7 +1,7 @@
 flight 1: Normal - KF tuning with calculated Values
 flight 2: Normal - KF tuning with calculated Values
 flight 3: Normal - KF tuning with calculated Values
-flight 4: Flipping- KF tuning with calculated Values
+flight 4: Flip - KF tuning with calculated Values
 flight 5: Normal - KF tuning with larger baro and acc tuning values
 flight 6: Normal - KF tuning with larger baro and acc tuning values
 flight 7: Double Flipping - KF tuning with larger baro and acc tuning values
