@@ -78,7 +78,6 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
     orientation_info = log_dict['orientation_info']
     filtered_data_info = log_dict['filtered_data_info']
     flight_states = log_dict['flight_states']
-    covariance_info = log_dict['covariance_info']
     sensor_info = log_dict['sensor_info']
     event_info = log_dict['event_info']
     error_info = log_dict['error_info']
@@ -91,16 +90,12 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
     flight_info_df = pd.DataFrame(flight_info)
     orientation_info_df = pd.DataFrame(orientation_info)
     filtered_data_info_df = pd.DataFrame(filtered_data_info)
-    covariance_df = pd.DataFrame(covariance_info)
-    flight_info_df['lower_bound'] = flight_info_df['height'] + \
-        3 * (covariance_df['height_cov']) ** 0.5
-    flight_info_df['upper_bound'] = flight_info_df['height'] - \
-        3 * (covariance_df['height_cov']) ** 0.5
     sensor_info_df = pd.DataFrame(sensor_info)
     event_info_df = pd.DataFrame(event_info)
     error_info_df = pd.DataFrame(error_info)
     magneto_df = pd.DataFrame(magneto)
     flight_states_df = pd.DataFrame(flight_states)
+
 
     # save raw logs
     imu_df.to_csv(f'{raw_output_dir}/{base_name} - imu_raw.csv')
@@ -113,8 +108,6 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
         f'{raw_output_dir}/{base_name} - flight_info_raw.csv')
     filtered_data_info_df.to_csv(
         f'{raw_output_dir}/{base_name} - filtered_data_info_raw.csv')
-    covariance_df.to_csv(
-        f'{raw_output_dir}/{base_name} - covariance_df_raw.csv')
     sensor_info_df.to_csv(
         f'{raw_output_dir}/{base_name} - sensor_info_raw.csv')
     event_info_df.to_csv(f'{raw_output_dir}/{base_name} - event_info_raw.csv')
@@ -142,7 +135,6 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
     offset_col(orientation_info_df, 'ts', zero_ts)
     offset_col(flight_info_df, 'ts', zero_ts)
     offset_col(filtered_data_info_df, 'ts', zero_ts)
-    offset_col(covariance_df, 'ts', zero_ts)
     #offset_col(sensor_info_df, 'ts', zero_ts)
 
     scale_col(imu_df, 'ts', 1000)
@@ -152,7 +144,6 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
     scale_col(orientation_info_df, 'ts', 1000)
     scale_col(flight_info_df, 'ts', 1000)
     scale_col(filtered_data_info_df, 'ts', 1000)
-    scale_col(covariance_df, 'ts', 1000)
     #scale_col(sensor_info_df, 'ts', 1000)
 
     if len(event_info_df) > 0:
@@ -176,10 +167,6 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
     scale_col(orientation_info_df, 'q1_estimated', 1000)
     scale_col(orientation_info_df, 'q2_estimated', 1000)
     scale_col(orientation_info_df, 'q3_estimated', 1000)
-    scale_col(orientation_info_df, 'q0_raw', 1000)
-    scale_col(orientation_info_df, 'q1_raw', 1000)
-    scale_col(orientation_info_df, 'q2_raw', 1000)
-    scale_col(orientation_info_df, 'q3_raw', 1000)
 
     scale_col(baro_df, 'T', 100)
 
@@ -193,8 +180,6 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
         f'{processed_output_dir}/{base_name} - orientation_info_processed.csv')
     filtered_data_info_df.to_csv(
         f'{processed_output_dir}/{base_name} - filtered_data_info_processed.csv')
-    covariance_df.to_csv(
-        f'{processed_output_dir}/{base_name} - covariance_df_processed.csv')
     sensor_info_df.to_csv(
         f'{processed_output_dir}/{base_name} - sensor_info_processed.csv')
     event_info_df.to_csv(
@@ -207,8 +192,8 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
         f'{processed_output_dir}/{base_name} - flight_states_processed.csv')
 
     return {'imu_df': imu_df, 'baro_df': baro_df, 'accelerometer_df': accelerometer_df, 'flight_info_df': flight_info_df,
-            'orientation_info_df': orientation_info_df, 'filtered_data_info_df': filtered_data_info_df, 'covariance_df': covariance_df,
-            'sensor_info_df': sensor_info_df, 'event_info_df': event_info_df, 'error_info_df': error_info_df, 'magneto_df': magneto_df, 'flight_states_df': flight_states_df}, plot_output_dir, base_name
+            'orientation_info_df': orientation_info_df, 'filtered_data_info_df': filtered_data_info_df, 'sensor_info_df': sensor_info_df,
+            'event_info_df': event_info_df, 'error_info_df': error_info_df, 'magneto_df': magneto_df, 'flight_states_df': flight_states_df}, plot_output_dir, base_name
 
 
 def parse_log(log_b: bytes):
@@ -219,7 +204,6 @@ def parse_log(log_b: bytes):
     orientation_info = []
     filtered_data_info = []
     flight_states = []
-    covariance_info = []
     sensor_info = []
     event_info = []
     error_info = []
@@ -229,15 +213,15 @@ def parse_log(log_b: bytes):
     last_ts = -1
     try:
         while i < len(log_b):
-            t = struct.unpack('<L', log_b[i:i + 4])[0]
+            ts, t = struct.unpack('<LL', log_b[i:i + 8])
             sensor_id = EC.get_id_from_record_type(t)
             t_without_id = EC.get_record_type_without_id(t)
-            i += 4
+            i += 8
+            if first_ts == -1:
+                first_ts = ts
             if t_without_id == REC_TYPE.IMU:
-                ts, gyro_x, gyro_y, gyro_z, acc_x, acc_y, acc_z = struct.unpack(
-                    '<Lhhhhhh', log_b[i: i + 16])
-                if first_ts == -1:
-                    first_ts = ts
+                gyro_x, gyro_y, gyro_z, acc_x, acc_y, acc_z = struct.unpack(
+                    '<hhhhhh', log_b[i: i + 12])
                 #print(f"{ts} IMU {t-1}: Gx: {gyro_x}, Gy: {gyro_y}, Gz: {gyro_z}, Ax: {acc_x}, Ay: {acc_y}, Az: {acc_z}")
                 imu.append({'ts': ts,
                             'id': f'IMU{sensor_id}',
@@ -248,128 +232,91 @@ def parse_log(log_b: bytes):
                             'Ay': acc_y,
                             'Az': acc_z})
                 # print(imu_data)
-                i += 4 + 6 + 6  # ts + 6 x int16
+                i += 6 * 2  # 6 x int16
             elif t_without_id == REC_TYPE.BARO:
-                ts, pressure, temperature = struct.unpack(
-                    '<LLL', log_b[i: i + 12])
-                if first_ts == -1:
-                    first_ts = ts
+                pressure, temperature = struct.unpack(
+                    '<LL', log_b[i: i + 8])
                 #print(f"{ts} BARO {t-4}: P: {pressure}, T: {temperature}")
                 baro.append({'ts': ts,
-                            'id': f'BARO{sensor_id}',
+                             'id': f'BARO{sensor_id}',
                              'T': temperature,
                              'P': pressure})
                 # print(baro_data)
-                i += 4 + 4 + 4
+                i += 4 + 4
             elif t_without_id == REC_TYPE.MAGNETO:
-                ts, mag_x, mag_y, mag_z = struct.unpack(
-                    '<Lfff', log_b[i: i + 16])
-                if first_ts == -1:
-                    first_ts = ts
+                mag_x, mag_y, mag_z = struct.unpack(
+                    '<fff', log_b[i: i + 12])
                 magneto.append({'ts': ts,
                                 'mx': mag_x,
                                 'my': mag_y,
                                 'mz': mag_z, })
-                i += 4 + 4 + 4 + 4
+                i += 4 + 4 + 4
             elif t_without_id == REC_TYPE.ACCELEROMETER:
-                ts, acc_x, acc_y, acc_z = struct.unpack(
-                    '<Lbbb', log_b[i: i + 7])
-                if first_ts == -1:
-                    first_ts = ts
+                acc_x, acc_y, acc_z = struct.unpack(
+                    '<bbb', log_b[i: i + 3])
                 accelerometer.append({'ts': ts,
                                       'acc_x': acc_x,
                                       'acc_y': acc_y,
                                       'acc_z': acc_z, })
-                i += 4 + 1 + 1 + 1 + 1
+                i += 1 + 1 + 1
             elif t_without_id == REC_TYPE.FLIGHT_INFO:
-                ts, height, velocity, acceleration = struct.unpack(
-                    '<Lfff', log_b[i: i + 16])
-                if first_ts == -1:
-                    first_ts = ts
+                height, velocity, acceleration = struct.unpack(
+                    '<fff', log_b[i: i + 12])
                 #print(f"{ts} FLIGHT_INFO: Height: {height}, Velocity: {velocity}, Acc: {acceleration}")
                 flight_info.append({'ts': ts,
                                     'height': height,
                                     'velocity': velocity,
                                     'acceleration': acceleration})
                 # print(flight_info_data)
-                i += 4 + 4 + 4 + 4
+                i += 4 + 4 + 4
             elif t_without_id == REC_TYPE.ORIENTATION_INFO:
-                ts, est_0, est_1, est_2, est_3, raw_0, raw_1, raw_2, raw_3 = struct.unpack(
-                    '<Lhhhhhhhh', log_b[i: i + 20])
-                if first_ts == -1:
-                    first_ts = ts
+                est_0, est_1, est_2, est_3 = struct.unpack(
+                    '<hhhh', log_b[i: i + 8])
                 orientation_info.append({'ts': ts,
-                                        'q0_estimated': est_0,
+                                         'q0_estimated': est_0,
                                          'q1_estimated': est_1,
                                          'q2_estimated': est_2,
-                                         'q3_estimated': est_3,
-                                         'q0_raw': raw_0,
-                                         'q1_raw': raw_1,
-                                         'q2_raw': raw_2,
-                                         'q3_raw': raw_3})
+                                         'q3_estimated': est_3,})
                 # print(orientation_info)
-                i += 4 + 4 + 4 + 4 + 4
+                i += 4 + 4
             elif t_without_id == REC_TYPE.FILTERED_DATA_INFO:
-                ts, altitude_agl, raw_acceleration, filtered_altitude_AGL, filtered_acceleration = struct.unpack(
-                    '<Lffff', log_b[i: i + 20])
-                if first_ts == -1:
-                    first_ts = ts
-                #print(f"{ts} FLIGHT_INFO: Height: {height}, Velocity: {velocity}, Acc: {acceleration}")
+                filtered_altitude_AGL, filtered_acceleration = struct.unpack(
+                    '<ff', log_b[i: i + 8])
+                #print(f"{ts} FILTERED_DATA_INFO: Filtered ALT: {filtered_altitude_AGL}, Filtered_acc: {filtered_acceleration}")
                 filtered_data_info.append({'ts': ts,
-                                           'altitude_agl': altitude_agl,
-                                           'raw_acceleration': raw_acceleration,
                                            'filtered_altitude_AGL': filtered_altitude_AGL,
                                            'filtered_acceleration': filtered_acceleration})
                 # print(flight_info_data)
-                i += 4 + 4 + 4 + 4 + 4
+                i += 4 + 4
             elif t_without_id == REC_TYPE.FLIGHT_STATE:
                 # print("FLIGHT_STATE")
-                ts, state = struct.unpack('<LL', log_b[i: i + 8])
-                if first_ts == -1:
-                    first_ts = ts
+                state = struct.unpack('<L', log_b[i: i + 4])[0]
                 flight_states.append({'ts': ts, 'state': state})
                 #print(f"{ts} FLIGHT STATE: State: {state}")
-                i += 4 + 4
-            elif t_without_id == REC_TYPE.COVARIANCE_INFO:
-                ts, height_cov, velocity_cov = struct.unpack(
-                    '<Lff', log_b[i: i + 12])
-                if first_ts == -1:
-                    first_ts = ts
-                #print(f"{ts} COVARIANCE_INFO: Height cov: {height_cov}, Velocity cov: {velocity_cov}")
-                covariance_info.append({'ts': ts,
-                                        'height_cov': height_cov,
-                                        'velocity_cov': velocity_cov})
-                # print(flight_info_data)
-                i += 4 + 4 + 4
+                i += 4
             elif t_without_id == REC_TYPE.SENSOR_INFO:
                 #print(f"Sensor info found at {i}")
-                ts, imu_0, imu_1, imu_2, baro_0, baro_1, baro_2 = struct.unpack(
-                    '<LBBBBBB', log_b[i: i + 10])
-                if first_ts == -1:
-                    first_ts = ts
+                imu_0, imu_1, imu_2, baro_0, baro_1, baro_2 = struct.unpack(
+                    '<BBBBBB', log_b[i: i + 6])
                 sensor_info.append({'ts': ts,
                                     'imu_0': imu_0,
                                     'imu_1': imu_1,
                                     'imu_2': imu_2,
                                     'baro_0': baro_0, 'baro_1': baro_1, 'baro_2': baro_2})
-                i += 4 + 6 + 2  # +2 is because of the padding
+                i += 6 + 2  # +2 is because of the padding
             elif t_without_id == REC_TYPE.EVENT_INFO:
                 #print(f"Event info found at {i}")
-                ts, event, out_idx = struct.unpack('<LLB', log_b[i: i + 9])
-                if first_ts == -1:
-                    first_ts = ts
+                event, out_idx = struct.unpack('<LB', log_b[i: i + 5])
                 event_info.append({'ts': ts,
                                    'event': event,
                                    'out_idx': out_idx})
-                i += 4 + 4 + 1 + 3  # +3 is because of the padding
+                i += 4 + 1 + 3  # +3 is because of the padding
             elif t_without_id == REC_TYPE.ERROR_INFO:
                 #print(f"Error info found at {i}")
-                ts, error = struct.unpack('<LL', log_b[i: i + 8])
-                if first_ts == -1:
-                    first_ts = ts
+                error = struct.unpack('<L', log_b[i: i + 4])[0]
                 error_info.append({'ts': ts,
                                    'error': error})
-                i += 4 + 4
+                i += 4
             else:
                 print(t)
                 print(f"ERROR at {i}")
@@ -383,5 +330,5 @@ def parse_log(log_b: bytes):
 
     return {'imu': imu, 'baro': baro, 'accelerometer': accelerometer, 'flight_info': flight_info,
             'orientation_info': orientation_info, 'filtered_data_info': filtered_data_info,
-            'flight_states': flight_states, 'covariance_info': covariance_info, 'sensor_info': sensor_info,
-            'event_info': event_info, 'error_info': error_info, 'magneto': magneto, 'first_ts': first_ts}
+            'flight_states': flight_states, 'sensor_info': sensor_info, 'event_info': event_info,
+            'error_info': error_info, 'magneto': magneto, 'first_ts': first_ts}

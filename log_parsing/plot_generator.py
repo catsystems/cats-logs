@@ -17,6 +17,7 @@ layout_args = dict(
     height=800,
 )
 
+
 def show(plot_arr: list[go.Figure]):
     for plot in plot_arr:
         plot.show()
@@ -279,12 +280,7 @@ def plot_flight_info(
     fig_height.add_scatter(
         x=flight_info_df.ts, y=flight_info_df["height"], name="height", mode="lines"
     )
-    fig_height.add_scatter(
-        x=filtered_data_info_df.ts,
-        y=filtered_data_info_df["altitude_agl"],
-        name="altitude_agl",
-        mode="lines",
-    )
+
     fig_height.add_scatter(
         x=filtered_data_info_df.ts,
         y=filtered_data_info_df["filtered_altitude_AGL"],
@@ -316,12 +312,7 @@ def plot_flight_info(
         name="acceleration",
         mode="lines",
     )
-    fig_acc.add_scatter(
-        x=filtered_data_info_df.ts,
-        y=filtered_data_info_df["raw_acceleration"],
-        name="raw_acceleration",
-        mode="lines",
-    )
+
     fig_acc.add_scatter(
         x=filtered_data_info_df.ts,
         y=filtered_data_info_df["filtered_acceleration"],

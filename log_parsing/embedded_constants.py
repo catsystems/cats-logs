@@ -47,14 +47,13 @@ ERROR_MAP = {
     0x08 : 'ERR_USB_CONNECTED',
     0x10 : 'ERR_BAT_LOW',
     0x20 : 'ERR_BAT_CRITICAL',
-    0x40 : 'ERR_IMU_0',
-    0x80 : 'ERR_IMU_1',
-    0x100 : 'ERR_IMU_2',
-    0x200 : 'ERR_BARO_0',
-    0x400 : 'ERR_BARO_1',
-    0x800 : 'ERR_BARO_2',
-    0x1000 : 'ERR_FILTER',
-    0x2000 : 'ERR_HARD_FAULT',
+    0x40 : 'ERR_IMU',
+    0x200 : 'ERR_BARO',
+    0x400 : 'ERR_MAG',
+    0x800 : 'ERR_ACC',
+    0x1000 : 'ERR_FILTER_ACC',
+    0x2000 : 'ERR_FILTER_HEIGHT',
+    0x4000 : 'ERR_HARD_FAULT',
     #0xFFFFFFFF: 'ERR_HEHE'
 }
 
@@ -68,10 +67,9 @@ class REC_TYPE(IntEnum):
   ORIENTATION_INFO   = 1 << 9   # 0x400
   FILTERED_DATA_INFO = 1 << 10  # 0x800
   FLIGHT_STATE       = 1 << 11  # 0x1000
-  COVARIANCE_INFO    = 1 << 12  # 0x2000
-  SENSOR_INFO        = 1 << 13  # 0x4000
-  EVENT_INFO         = 1 << 14  # 0x8000
-  ERROR_INFO         = 1 << 15  # 0x10000
+  SENSOR_INFO        = 1 << 12  # 0x2000
+  EVENT_INFO         = 1 << 13  # 0x4000
+  ERROR_INFO         = 1 << 14  # 0x8000
 
 REC_ID_MASK = 0x0000000F
 
