@@ -71,9 +71,8 @@ class REC_TYPE(IntEnum):
   ORIENTATION_INFO   = 1 << 9   # 0x400
   FILTERED_DATA_INFO = 1 << 10  # 0x800
   FLIGHT_STATE       = 1 << 11  # 0x1000
-  SENSOR_INFO        = 1 << 12  # 0x2000
-  EVENT_INFO         = 1 << 13  # 0x4000
-  ERROR_INFO         = 1 << 14  # 0x8000
+  EVENT_INFO         = 1 << 12  # 0x2000
+  ERROR_INFO         = 1 << 13  # 0x4000
 
 REC_ID_MASK = 0x0000000F
 

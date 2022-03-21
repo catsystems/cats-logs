@@ -51,8 +51,8 @@ def report_non_periodic_recordings(log_dict: Dict[str, list], state_map: Dict[in
     
     print('\nErrors:')
     for error in log_dict['error_info']:
-        if error['error'] in ERROR_MAP:
-            error['error'] = ERROR_MAP[error['error']]
+        # if error['error'] in ERROR_MAP:
+        #     error['error'] = ERROR_MAP[error['error']]
         print(f"{error['ts']} -- {error['error']}")
     return ev_liftoff_ts
 
@@ -70,6 +70,7 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
     log_dict = parse_log(log_b)
 
     ev_liftoff_ts = report_non_periodic_recordings(log_dict, state_map)
+    #ev_liftoff_ts = 1000
 
     imu = log_dict['imu']
     baro = log_dict['baro']
@@ -78,7 +79,6 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
     orientation_info = log_dict['orientation_info']
     filtered_data_info = log_dict['filtered_data_info']
     flight_states = log_dict['flight_states']
-    sensor_info = log_dict['sensor_info']
     event_info = log_dict['event_info']
     error_info = log_dict['error_info']
     magneto = log_dict['magneto']
@@ -90,7 +90,6 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
     flight_info_df = pd.DataFrame(flight_info)
     orientation_info_df = pd.DataFrame(orientation_info)
     filtered_data_info_df = pd.DataFrame(filtered_data_info)
-    sensor_info_df = pd.DataFrame(sensor_info)
     event_info_df = pd.DataFrame(event_info)
     error_info_df = pd.DataFrame(error_info)
     magneto_df = pd.DataFrame(magneto)
@@ -108,8 +107,6 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
         f'{raw_output_dir}/{base_name} - flight_info_raw.csv')
     filtered_data_info_df.to_csv(
         f'{raw_output_dir}/{base_name} - filtered_data_info_raw.csv')
-    sensor_info_df.to_csv(
-        f'{raw_output_dir}/{base_name} - sensor_info_raw.csv')
     event_info_df.to_csv(f'{raw_output_dir}/{base_name} - event_info_raw.csv')
     error_info_df.to_csv(f'{raw_output_dir}/{base_name} - error_info_raw.csv')
     magneto_df.to_csv(f'{raw_output_dir}/{base_name} - magneto_info_raw.csv')
@@ -135,7 +132,6 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
     offset_col(orientation_info_df, 'ts', zero_ts)
     offset_col(flight_info_df, 'ts', zero_ts)
     offset_col(filtered_data_info_df, 'ts', zero_ts)
-    #offset_col(sensor_info_df, 'ts', zero_ts)
 
     scale_col(imu_df, 'ts', 1000)
     scale_col(baro_df, 'ts', 1000)
@@ -144,7 +140,6 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
     scale_col(orientation_info_df, 'ts', 1000)
     scale_col(flight_info_df, 'ts', 1000)
     scale_col(filtered_data_info_df, 'ts', 1000)
-    #scale_col(sensor_info_df, 'ts', 1000)
 
     if len(event_info_df) > 0:
         offset_col(event_info_df, 'ts', zero_ts)
@@ -180,8 +175,6 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
         f'{processed_output_dir}/{base_name} - orientation_info_processed.csv')
     filtered_data_info_df.to_csv(
         f'{processed_output_dir}/{base_name} - filtered_data_info_processed.csv')
-    sensor_info_df.to_csv(
-        f'{processed_output_dir}/{base_name} - sensor_info_processed.csv')
     event_info_df.to_csv(
         f'{processed_output_dir}/{base_name} - event_info_processed.csv')
     error_info_df.to_csv(
@@ -192,8 +185,8 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
         f'{processed_output_dir}/{base_name} - flight_states_processed.csv')
 
     return {'imu_df': imu_df, 'baro_df': baro_df, 'accelerometer_df': accelerometer_df, 'flight_info_df': flight_info_df,
-            'orientation_info_df': orientation_info_df, 'filtered_data_info_df': filtered_data_info_df, 'sensor_info_df': sensor_info_df,
-            'event_info_df': event_info_df, 'error_info_df': error_info_df, 'magneto_df': magneto_df, 'flight_states_df': flight_states_df}, plot_output_dir, base_name
+            'orientation_info_df': orientation_info_df, 'filtered_data_info_df': filtered_data_info_df, 'event_info_df': event_info_df,
+            'error_info_df': error_info_df, 'magneto_df': magneto_df, 'flight_states_df': flight_states_df}, plot_output_dir, base_name
 
 
 def parse_log(log_b: bytes):
@@ -204,7 +197,6 @@ def parse_log(log_b: bytes):
     orientation_info = []
     filtered_data_info = []
     flight_states = []
-    sensor_info = []
     event_info = []
     error_info = []
     magneto = []
@@ -294,16 +286,6 @@ def parse_log(log_b: bytes):
                 flight_states.append({'ts': ts, 'state': state})
                 #print(f"{ts} FLIGHT STATE: State: {state}")
                 i += 4
-            elif t_without_id == REC_TYPE.SENSOR_INFO:
-                #print(f"Sensor info found at {i}")
-                imu_0, imu_1, imu_2, baro_0, baro_1, baro_2 = struct.unpack(
-                    '<BBBBBB', log_b[i: i + 6])
-                sensor_info.append({'ts': ts,
-                                    'imu_0': imu_0,
-                                    'imu_1': imu_1,
-                                    'imu_2': imu_2,
-                                    'baro_0': baro_0, 'baro_1': baro_1, 'baro_2': baro_2})
-                i += 6 + 2  # +2 is because of the padding
             elif t_without_id == REC_TYPE.EVENT_INFO:
                 #print(f"Event info found at {i}")
                 event, out_idx = struct.unpack('<LB', log_b[i: i + 5])
@@ -330,5 +312,5 @@ def parse_log(log_b: bytes):
 
     return {'imu': imu, 'baro': baro, 'accelerometer': accelerometer, 'flight_info': flight_info,
             'orientation_info': orientation_info, 'filtered_data_info': filtered_data_info,
-            'flight_states': flight_states, 'sensor_info': sensor_info, 'event_info': event_info,
-            'error_info': error_info, 'magneto': magneto, 'first_ts': first_ts}
+            'flight_states': flight_states, 'event_info': event_info, 'error_info': error_info,
+            'magneto': magneto, 'first_ts': first_ts}
