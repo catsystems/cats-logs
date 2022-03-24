@@ -212,17 +212,17 @@ def parse_log(log_b: bytes):
             if first_ts == -1:
                 first_ts = ts
             if t_without_id == REC_TYPE.IMU:
-                gyro_x, gyro_y, gyro_z, acc_x, acc_y, acc_z = struct.unpack(
+                acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z = struct.unpack(
                     '<hhhhhh', log_b[i: i + 12])
                 #print(f"{ts} IMU {t-1}: Gx: {gyro_x}, Gy: {gyro_y}, Gz: {gyro_z}, Ax: {acc_x}, Ay: {acc_y}, Az: {acc_z}")
                 imu.append({'ts': ts,
                             'id': f'IMU{sensor_id}',
-                            'Gx': gyro_x,
-                            'Gy': gyro_y,
-                            'Gz': gyro_z,
                             'Ax': acc_x,
                             'Ay': acc_y,
-                            'Az': acc_z})
+                            'Az': acc_z,
+                            'Gx': gyro_x,
+                            'Gy': gyro_y,
+                            'Gz': gyro_z})
                 # print(imu_data)
                 i += 6 * 2  # 6 x int16
             elif t_without_id == REC_TYPE.BARO:

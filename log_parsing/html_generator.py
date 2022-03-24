@@ -46,10 +46,25 @@ def figures_to_html(
     #             white-space:nowrap;
     #         }
 
+    
+    dashboard.write("<h1>State Estimation Data</h1>")
+    
+    add_js = True
+    xyz = ["AGL Altitude & Height", "Velocity", "Acceleration"]
+    i = 0
+    for fig in state_plots:
+        inner_html = pyo.plot(fig, include_plotlyjs=add_js, output_type="div")
+        dashboard.write(f'<h2>{xyz[i]}</h2><div class="container">')
+        dashboard.write(inner_html)
+        dashboard.write("</div>")
+        add_js = False
+        i += 1
+
+    dashboard.write("<br/>")
+
     dashboard.write("<h1>IMU Data - Acceleration</h1>")
     # dashboard.write('<h1>IMU Data - Acceleration</h1><div class="container">')
 
-    add_js = True
     xyz = "XYZ"
     i = 0
     for fig in imu_plots[:3]:
@@ -106,20 +121,6 @@ def figures_to_html(
     for fig in magneto_plots:
         inner_html = pyo.plot(fig, include_plotlyjs=add_js, output_type="div")
         dashboard.write(f'<h2>Magneto {xyz[i]}</h2><div class="container">')
-        dashboard.write(inner_html)
-        dashboard.write("</div>")
-        add_js = False
-        i += 1
-
-    dashboard.write("<br/>")
-
-    dashboard.write("<h1>State Estimation Data</h1>")
-
-    xyz = ["AGL Altitude & Height", "Velocity", "Acceleration"]
-    i = 0
-    for fig in state_plots:
-        inner_html = pyo.plot(fig, include_plotlyjs=add_js, output_type="div")
-        dashboard.write(f'<h2>{xyz[i]}</h2><div class="container">')
         dashboard.write(inner_html)
         dashboard.write("</div>")
         add_js = False

@@ -82,6 +82,7 @@ def add_flight_states_and_events(
             showlegend=True if idx == 1 else False,
             line_width=1,
             line_dash="dot",
+            visible='legendonly'
         )
 
 
