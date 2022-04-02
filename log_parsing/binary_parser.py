@@ -157,6 +157,10 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
     scale_col(imu_df, 'Ax', 1024)
     scale_col(imu_df, 'Ay', 1024)
     scale_col(imu_df, 'Az', 1024)
+    
+    scale_col(accelerometer_df, 'Ax', 1.28)
+    scale_col(accelerometer_df, 'Ay', 1.28)
+    scale_col(accelerometer_df, 'Az', 1.28)
 
     scale_col(orientation_info_df, 'q0_estimated', 1000)
     scale_col(orientation_info_df, 'q1_estimated', 1000)
@@ -239,17 +243,17 @@ def parse_log(log_b: bytes):
                 mag_x, mag_y, mag_z = struct.unpack(
                     '<fff', log_b[i: i + 12])
                 magneto.append({'ts': ts,
-                                'mx': mag_x,
-                                'my': mag_y,
-                                'mz': mag_z, })
+                                'Mx': mag_x,
+                                'My': mag_y,
+                                'Mz': mag_z, })
                 i += 4 + 4 + 4
             elif t_without_id == REC_TYPE.ACCELEROMETER:
                 acc_x, acc_y, acc_z = struct.unpack(
                     '<bbb', log_b[i: i + 3])
                 accelerometer.append({'ts': ts,
-                                      'acc_x': acc_x,
-                                      'acc_y': acc_y,
-                                      'acc_z': acc_z, })
+                                      'Ax': acc_x,
+                                      'Ay': acc_y,
+                                      'Az': acc_z, })
                 i += 1 + 1 + 1
             elif t_without_id == REC_TYPE.FLIGHT_INFO:
                 height, velocity, acceleration = struct.unpack(

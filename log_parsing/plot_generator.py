@@ -158,9 +158,9 @@ def plot_acc_data(acc_df, flight_states_df, event_info_df, error_info_df):
     fig_ax = go.Figure()
     fig_ay = go.Figure()
     fig_az = go.Figure()
-    fig_ax.add_scatter(x=acc_df.ts, y=acc_df["acc_x"], name="Acc x", mode="lines")
-    fig_ay.add_scatter(x=acc_df.ts, y=acc_df["acc_y"], name="Acc y", mode="lines")
-    fig_az.add_scatter(x=acc_df.ts, y=acc_df["acc_z"], name="Acc z", mode="lines")
+    fig_ax.add_scatter(x=acc_df.ts, y=acc_df["Ax"], name="Acc x", mode="lines")
+    fig_ay.add_scatter(x=acc_df.ts, y=acc_df["Ay"], name="Acc y", mode="lines")
+    fig_az.add_scatter(x=acc_df.ts, y=acc_df["Az"], name="Acc z", mode="lines")
 
     add_flight_states_and_events(fig_ax, flight_states_df, event_info_df, error_info_df)
     add_flight_states_and_events(fig_ay, flight_states_df, event_info_df, error_info_df)
@@ -195,13 +195,13 @@ def plot_magneto_data(magneto_df, flight_states_df, event_info_df, error_info_df
     fig_my = go.Figure()
     fig_mz = go.Figure()
     fig_mx.add_scatter(
-        x=magneto_df.ts, y=magneto_df["mx"], name="magneto x", mode="lines"
+        x=magneto_df.ts, y=magneto_df["Mx"], name="magneto x", mode="lines"
     )
     fig_my.add_scatter(
-        x=magneto_df.ts, y=magneto_df["my"], name="magneto y", mode="lines"
+        x=magneto_df.ts, y=magneto_df["My"], name="magneto y", mode="lines"
     )
     fig_mz.add_scatter(
-        x=magneto_df.ts, y=magneto_df["mz"], name="magneto z", mode="lines"
+        x=magneto_df.ts, y=magneto_df["Mz"], name="magneto z", mode="lines"
     )
 
     add_flight_states_and_events(fig_mx, flight_states_df, event_info_df, error_info_df)
