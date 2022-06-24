@@ -155,6 +155,8 @@ def plot_imu_data(imu_df, flight_states_df, event_info_df, error_info_df):
 
 
 def plot_acc_data(acc_df, flight_states_df, event_info_df, error_info_df):
+    if 'ts' not in acc_df.columns:
+        return []
     fig_ax = go.Figure()
     fig_ay = go.Figure()
     fig_az = go.Figure()
@@ -191,6 +193,8 @@ def plot_acc_data(acc_df, flight_states_df, event_info_df, error_info_df):
 
 
 def plot_magneto_data(magneto_df, flight_states_df, event_info_df, error_info_df):
+    if 'ts' not in magneto_df.columns:
+        return []
     fig_mx = go.Figure()
     fig_my = go.Figure()
     fig_mz = go.Figure()

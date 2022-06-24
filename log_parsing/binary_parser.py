@@ -116,10 +116,12 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
 
     # process logs
     def offset_col(df, col, offset):
-        df[col] -= offset
+        if col in df.columns:
+            df[col] -= offset
 
     def scale_col(df, col, scale_factor):
-        df[col] /= scale_factor
+        if col in df.columns:
+            df[col] /= scale_factor
 
     zero_ts = first_ts
     if ev_liftoff_ts > 0:
