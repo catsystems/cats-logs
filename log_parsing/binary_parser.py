@@ -19,10 +19,12 @@ def read_log(log_path: str) -> str:
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
 
-    with open(log_path, 'r') as f:
+    is_binary = log_path.split('/')[-1].split('.')[-1] == 'cfl'
+
+    with open(log_path, 'rb' if is_binary else 'r') as f:
         log_str = f.read()
 
-    return log_str, base_name, plot_output_dir, raw_output_dir, processed_output_dir
+    return log_str, base_name, plot_output_dir, raw_output_dir, processed_output_dir, is_binary
 
 
 def prepare_log(log_str: str) -> str:
@@ -58,12 +60,15 @@ def report_non_periodic_recordings(log_dict: Dict[str, list], state_map: Dict[in
 
 
 def extract_data(log_path: str, state_map: Dict[int, str]):
-    log_str, base_name, plot_output_dir, raw_output_dir, processed_output_dir = read_log(
+    log_str, base_name, plot_output_dir, raw_output_dir, processed_output_dir, is_binary = read_log(
         log_path)
 
-    log_str_formatted = prepare_log(log_str)
-
-    log_b = bytes.fromhex(log_str_formatted)
+    if not is_binary:
+        log_str_formatted = prepare_log(log_str)
+        log_b = bytes.fromhex(log_str_formatted)
+    else:
+        log_b = log_str
+        print(type(log_str))
 
     print(f"start of log: {log_b[:23]}")
 
@@ -211,10 +216,10 @@ def parse_log(log_b: bytes):
     last_ts = -1
     try:
         while i < len(log_b):
-            ts, t = struct.unpack('<LL', log_b[i:i + 8])
+            ts, t = struct.unpack('<LL', log_b[i:i + 4])
             sensor_id = EC.get_id_from_record_type(t)
             t_without_id = EC.get_record_type_without_id(t)
-            i += 8
+            i += 4
             if first_ts == -1:
                 first_ts = ts
             if t_without_id == REC_TYPE.IMU:
