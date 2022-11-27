@@ -342,7 +342,7 @@ def parse_log(log_b: bytes):
         print(f'Parsing ended with error: {e}')
     finally:
         print(
-            f'Parsing ended at position: {i}/{len(log_b)}\nFirst timestamp: {first_ts / 1000}s; Last timestamp: {last_ts / 1000}s\n')
+            f'Parsing ended at position: {i}/{len(log_b)}\nFirst timestamp: {first_ts / 1000}s; Last timestamp: {last_ts / 1000}s')
 
     return {'imu': imu, 'baro': baro, 'accelerometer': accelerometer, 'flight_info': flight_info,
             'orientation_info': orientation_info, 'filtered_data_info': filtered_data_info,

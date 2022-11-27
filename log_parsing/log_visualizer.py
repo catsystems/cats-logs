@@ -25,12 +25,16 @@ def main(args):
     error_info_df = df_dict['error_info_df']
     flight_states_df = df_dict['flight_states_df']
     
+    print('\nGenerating plots, this might take a while...')
+    
     imu_plots = plot_imu_data(imu_df, flight_states_df, event_info_df, error_info_df)
     magneto_plots = plot_magneto_data(magneto_df, flight_states_df, event_info_df, error_info_df)
     accelerometer_plots = plot_acc_data(accelerometer_df, flight_states_df, event_info_df, error_info_df)
     baro_plots = plot_baro_data(baro_df, flight_states_df, event_info_df, error_info_df)
     state_plots = plot_flight_info(flight_info_df, filtered_data_info_df, flight_states_df, event_info_df, error_info_df, False)
     figures_to_html(imu_plots, baro_plots, accelerometer_plots, magneto_plots, state_plots, f'{plot_output_dir}/{base_name} - plots.html')
+    
+    print(f'Plots generated in {plot_output_dir}!')
     
     return
 
