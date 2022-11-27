@@ -17,15 +17,6 @@ FLIGHT_MAP = {
     #0x7FFFFFFF: 'HEHE2'
 }
 
-DROP_MAP = {
-    0: 'INVALID',
-    1: 'MOVING',
-    2: 'READY',
-    3: 'DROGUE CHUTE',
-    4: 'MAIN CHUTE',
-    #0x7FFFFFFF: 'HEHE'
-}
-
 EVENT_MAP = {
     0: 'EV_MOVING',
     1: 'EV_READY',

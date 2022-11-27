@@ -8,12 +8,7 @@ import embedded_constants as EC
 from embedded_constants import REC_TYPE, EVENT_MAP, ERROR_MAP
 
 
-def read_log(log_path: str) -> str:
-    base_name = log_path.split('/')[-1].split('.')[0]
-
-    plot_output_dir = f'output/{base_name}'
-    raw_output_dir = f'output/{base_name}/raw'
-    processed_output_dir = f'output/{base_name}/processed'
+def read_log(log_path: str, plot_output_dir: str, raw_output_dir: str, processed_output_dir: str) -> str:
 
     for out_dir in [plot_output_dir, raw_output_dir, processed_output_dir]:
         if not os.path.exists(out_dir):
@@ -24,7 +19,7 @@ def read_log(log_path: str) -> str:
     with open(log_path, 'rb' if is_binary else 'r') as f:
         log_str = f.read()
 
-    return log_str, base_name, plot_output_dir, raw_output_dir, processed_output_dir, is_binary
+    return log_str, is_binary
 
 
 def prepare_log(log_str: str) -> str:
@@ -51,17 +46,30 @@ def report_non_periodic_recordings(log_dict: Dict[str, list], state_map: Dict[in
         print(f"{state['ts']} -- {state['state']}")
 
     
-    print('\nErrors:')
-    for error in log_dict['error_info']:
-        # if error['error'] in ERROR_MAP:
-        #     error['error'] = ERROR_MAP[error['error']]
-        print(f"{error['ts']} -- {error['error']}")
+    # print('\nErrors:')
+    # for error in log_dict['error_info']:
+    #     # if error['error'] in ERROR_MAP:
+    #     #     error['error'] = ERROR_MAP[error['error']]
+    #     print(f"{error['ts']} -- {error['error']}")
     return ev_liftoff_ts
 
 
-def extract_data(log_path: str, state_map: Dict[int, str]):
-    log_str, base_name, plot_output_dir, raw_output_dir, processed_output_dir, is_binary = read_log(
-        log_path)
+def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int, str], from_notebook: bool = False):
+    base_name = input_log_path.split('/')[-1].split('.')[0]
+    if from_notebook:
+        plot_output_dir = f'output/{base_name}'
+        raw_output_dir = f'output/{base_name}/raw'
+        processed_output_dir = f'output/{base_name}/processed'
+    else:
+        if output_log_path is None:
+            output_log_path = os.getcwd()
+
+        plot_output_dir = f'{output_log_path}'
+        raw_output_dir = f'{output_log_path}/raw'
+        processed_output_dir = f'{output_log_path}/processed'
+
+    log_str, is_binary = read_log(
+        input_log_path, plot_output_dir, raw_output_dir, processed_output_dir)
 
     if not is_binary:
         log_str_formatted = prepare_log(log_str)
@@ -70,7 +78,7 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
         log_b = log_str
         print(type(log_str))
 
-    print(f"start of log: {log_b[:23]}")
+    # print(f"start of log: {log_b[:23]}")
 
     log_dict = parse_log(log_b)
 
@@ -158,12 +166,21 @@ def extract_data(log_path: str, state_map: Dict[int, str]):
         offset_col(error_info_df, 'ts', zero_ts)
         scale_col(error_info_df, 'ts', 1000)
 
-    scale_col(imu_df, 'Gx', 16.4)
-    scale_col(imu_df, 'Gy', 16.4)
-    scale_col(imu_df, 'Gz', 16.4)
-    scale_col(imu_df, 'Ax', 1024)
-    scale_col(imu_df, 'Ay', 1024)
-    scale_col(imu_df, 'Az', 1024)
+    #new VEGA scalng
+    scale_col(imu_df, 'Gx', 14.28)
+    scale_col(imu_df, 'Gy', 14.28)
+    scale_col(imu_df, 'Gz', 14.28)
+    scale_col(imu_df, 'Ax', 2048)
+    scale_col(imu_df, 'Ay', 2048)
+    scale_col(imu_df, 'Az', 2048)
+
+    #old VEGA scaling
+    # scale_col(imu_df, 'Gx', 16.4)
+    # scale_col(imu_df, 'Gy', 16.4)
+    # scale_col(imu_df, 'Gz', 16.4)
+    # scale_col(imu_df, 'Ax', 1024)
+    # scale_col(imu_df, 'Ay', 1024)
+    # scale_col(imu_df, 'Az', 1024)
     
     scale_col(accelerometer_df, 'Ax', 1.28)
     scale_col(accelerometer_df, 'Ay', 1.28)
@@ -216,16 +233,16 @@ def parse_log(log_b: bytes):
     last_ts = -1
     try:
         while i < len(log_b):
-            ts, t = struct.unpack('<LL', log_b[i:i + 4])
+            ts, t = struct.unpack('<LL', log_b[i:i + 8])
             sensor_id = EC.get_id_from_record_type(t)
             t_without_id = EC.get_record_type_without_id(t)
-            i += 4
+            i += 8
             if first_ts == -1:
                 first_ts = ts
             if t_without_id == REC_TYPE.IMU:
                 acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z = struct.unpack(
                     '<hhhhhh', log_b[i: i + 12])
-                #print(f"{ts} IMU {t-1}: Gx: {gyro_x}, Gy: {gyro_y}, Gz: {gyro_z}, Ax: {acc_x}, Ay: {acc_y}, Az: {acc_z}")
+                # print(f"{ts} IMU {sensor_id}: Gx: {gyro_x}, Gy: {gyro_y}, Gz: {gyro_z}, Ax: {acc_x}, Ay: {acc_y}, Az: {acc_z}")
                 imu.append({'ts': ts,
                             'id': f'IMU{sensor_id}',
                             'Ax': acc_x,
@@ -239,7 +256,7 @@ def parse_log(log_b: bytes):
             elif t_without_id == REC_TYPE.BARO:
                 pressure, temperature = struct.unpack(
                     '<LL', log_b[i: i + 8])
-                #print(f"{ts} BARO {t-4}: P: {pressure}, T: {temperature}")
+                # print(f"{ts} BARO {sensor_id}: P: {pressure}, T: {temperature}")
                 baro.append({'ts': ts,
                              'id': f'BARO{sensor_id}',
                              'T': temperature,
@@ -265,7 +282,7 @@ def parse_log(log_b: bytes):
             elif t_without_id == REC_TYPE.FLIGHT_INFO:
                 height, velocity, acceleration = struct.unpack(
                     '<fff', log_b[i: i + 12])
-                #print(f"{ts} FLIGHT_INFO: Height: {height}, Velocity: {velocity}, Acc: {acceleration}")
+                # print(f"{ts} FLIGHT_INFO: Height: {height}, Velocity: {velocity}, Acc: {acceleration}")
                 flight_info.append({'ts': ts,
                                     'height': height,
                                     'velocity': velocity,
@@ -285,7 +302,7 @@ def parse_log(log_b: bytes):
             elif t_without_id == REC_TYPE.FILTERED_DATA_INFO:
                 filtered_altitude_AGL, filtered_acceleration = struct.unpack(
                     '<ff', log_b[i: i + 8])
-                #print(f"{ts} FILTERED_DATA_INFO: Filtered ALT: {filtered_altitude_AGL}, Filtered_acc: {filtered_acceleration}")
+                # print(f"{ts} FILTERED_DATA_INFO: Filtered ALT: {filtered_altitude_AGL}, Filtered_acc: {filtered_acceleration}")
                 filtered_data_info.append({'ts': ts,
                                            'filtered_altitude_AGL': filtered_altitude_AGL,
                                            'filtered_acceleration': filtered_acceleration})
@@ -295,17 +312,17 @@ def parse_log(log_b: bytes):
                 # print("FLIGHT_STATE")
                 state = struct.unpack('<L', log_b[i: i + 4])[0]
                 flight_states.append({'ts': ts, 'state': state})
-                #print(f"{ts} FLIGHT STATE: State: {state}")
+                # print(f"{ts} FLIGHT STATE: State: {state}")
                 i += 4
             elif t_without_id == REC_TYPE.EVENT_INFO:
-                #print(f"Event info found at {i}")
+                # print(f"Event info found at {i}")
                 event, out_idx = struct.unpack('<LB', log_b[i: i + 5])
                 event_info.append({'ts': ts,
                                    'event': event,
                                    'out_idx': out_idx})
                 i += 4 + 1 + 3  # +3 is because of the padding
             elif t_without_id == REC_TYPE.ERROR_INFO:
-                #print(f"Error info found at {i}")
+                # print(f"Error info found at {i}")
                 error = struct.unpack('<L', log_b[i: i + 4])[0]
                 error_info.append({'ts': ts,
                                    'error': error})
@@ -315,6 +332,12 @@ def parse_log(log_b: bytes):
                 print(f"ERROR at {i}")
                 break
             last_ts = ts
+    except struct.error as e:
+        if 'unpack requires a buffer of' in repr(e):
+            print('Parsing successful!')
+            pass
+        else:
+            print(f'Parsing ended with error: {e}')
     except Exception as e:
         print(f'Parsing ended with error: {e}')
     finally:
