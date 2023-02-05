@@ -32,9 +32,7 @@ HTML_STYLE = """
 """
 
 
-def figures_to_html(
-    imu_plots, baro_plots, accelerometer_plots, magneto_plots, voltage_plot, state_plots, filename
-):
+def figures_to_html(imu_plots, baro_plots, voltage_plot, state_plots, filename):
     """Saves a list of plotly figures in an html file."""
 
     dashboard = open(filename, "w")
@@ -95,32 +93,6 @@ def figures_to_html(
     for fig in baro_plots:
         inner_html = pyo.plot(fig, include_plotlyjs=add_js, output_type="div")
         dashboard.write(f'<h2>{xyz[i]}</h2><div class="container">')
-        dashboard.write(inner_html)
-        dashboard.write("</div>")
-        add_js = False
-        i += 1
-
-    dashboard.write("<br/>")
-
-    dashboard.write("<h1>Accelerometer Data</h1>")
-    xyz = "XYZ"
-    i = 0
-    for fig in accelerometer_plots:
-        inner_html = pyo.plot(fig, include_plotlyjs=add_js, output_type="div")
-        dashboard.write(f'<h2>Accelerometer {xyz[i]}</h2><div class="container">')
-        dashboard.write(inner_html)
-        dashboard.write("</div>")
-        add_js = False
-        i += 1
-
-    dashboard.write("<br/>")
-
-    dashboard.write("<h1>Magnetometer Data</h1>")
-    xyz = "XYZ"
-    i = 0
-    for fig in magneto_plots:
-        inner_html = pyo.plot(fig, include_plotlyjs=add_js, output_type="div")
-        dashboard.write(f'<h2>Magneto {xyz[i]}</h2><div class="container">')
         dashboard.write(inner_html)
         dashboard.write("</div>")
         add_js = False

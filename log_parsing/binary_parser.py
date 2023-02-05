@@ -87,7 +87,6 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
 
     imu = log_dict['imu']
     baro = log_dict['baro']
-    accelerometer = log_dict['accelerometer']
     flight_info = log_dict['flight_info']
     orientation_info = log_dict['orientation_info']
     filtered_data_info = log_dict['filtered_data_info']
@@ -95,18 +94,15 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
     event_info = log_dict['event_info']
     error_info = log_dict['error_info']
     voltage_info = log_dict['voltage_info']
-    magneto = log_dict['magneto']
     first_ts = log_dict['first_ts']
 
     imu_df = pd.DataFrame(imu)
     baro_df = pd.DataFrame(baro)
-    accelerometer_df = pd.DataFrame(accelerometer)
     flight_info_df = pd.DataFrame(flight_info)
     orientation_info_df = pd.DataFrame(orientation_info)
     filtered_data_info_df = pd.DataFrame(filtered_data_info)
     event_info_df = pd.DataFrame(event_info)
     error_info_df = pd.DataFrame(error_info)
-    magneto_df = pd.DataFrame(magneto)
     flight_states_df = pd.DataFrame(flight_states)
     voltage_info_df = pd.DataFrame(voltage_info)
 
@@ -114,8 +110,6 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
     # save raw logs
     imu_df.to_csv(f'{raw_output_dir}/{base_name} - imu_raw.csv')
     baro_df.to_csv(f'{raw_output_dir}/{base_name} - baro_raw.csv')
-    accelerometer_df.to_csv(
-        f'{raw_output_dir}/{base_name} - accelerometer_raw.csv')
     orientation_info_df.to_csv(
         f'{raw_output_dir}/{base_name} - orientation_info_raw.csv')
     flight_info_df.to_csv(
@@ -124,7 +118,6 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
         f'{raw_output_dir}/{base_name} - filtered_data_info_raw.csv')
     event_info_df.to_csv(f'{raw_output_dir}/{base_name} - event_info_raw.csv')
     error_info_df.to_csv(f'{raw_output_dir}/{base_name} - error_info_raw.csv')
-    magneto_df.to_csv(f'{raw_output_dir}/{base_name} - magneto_info_raw.csv')
     flight_states_df.to_csv(
         f'{raw_output_dir}/{base_name} - flight_states_raw.csv')
     voltage_info_df.to_csv(
@@ -146,8 +139,6 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
 
     offset_col(imu_df, 'ts', zero_ts)
     offset_col(baro_df, 'ts', zero_ts)
-    offset_col(magneto_df, 'ts', zero_ts)
-    offset_col(accelerometer_df, 'ts', zero_ts)
     offset_col(orientation_info_df, 'ts', zero_ts)
     offset_col(flight_info_df, 'ts', zero_ts)
     offset_col(filtered_data_info_df, 'ts', zero_ts)
@@ -155,8 +146,6 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
 
     scale_col(imu_df, 'ts', 1000)
     scale_col(baro_df, 'ts', 1000)
-    scale_col(magneto_df, 'ts', 1000)
-    scale_col(accelerometer_df, 'ts', 1000)
     scale_col(orientation_info_df, 'ts', 1000)
     scale_col(flight_info_df, 'ts', 1000)
     scale_col(filtered_data_info_df, 'ts', 1000)
@@ -187,10 +176,6 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
     # scale_col(imu_df, 'Ax', 1024)
     # scale_col(imu_df, 'Ay', 1024)
     # scale_col(imu_df, 'Az', 1024)
-    
-    scale_col(accelerometer_df, 'Ax', 1.28)
-    scale_col(accelerometer_df, 'Ay', 1.28)
-    scale_col(accelerometer_df, 'Az', 1.28)
 
     scale_col(orientation_info_df, 'q0_estimated', 1000)
     scale_col(orientation_info_df, 'q1_estimated', 1000)
@@ -203,8 +188,6 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
 
     imu_df.to_csv(f'{processed_output_dir}/{base_name} - imu_processed.csv')
     baro_df.to_csv(f'{processed_output_dir}/{base_name} - baro_processed.csv')
-    accelerometer_df.to_csv(
-        f'{processed_output_dir}/{base_name} - accelerometer_processed.csv')
     flight_info_df.to_csv(
         f'{processed_output_dir}/{base_name} - flight_info_processed.csv')
     orientation_info_df.to_csv(
@@ -215,23 +198,19 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
         f'{processed_output_dir}/{base_name} - event_info_processed.csv')
     error_info_df.to_csv(
         f'{processed_output_dir}/{base_name} - error_info_processed.csv')
-    magneto_df.to_csv(
-        f'{processed_output_dir}/{base_name} - magneto_processed.csv')
     flight_states_df.to_csv(
         f'{processed_output_dir}/{base_name} - flight_states_processed.csv')
     voltage_info_df.to_csv(
         f'{processed_output_dir}/{base_name} - voltage_info_processed.csv')
 
-    return {'imu_df': imu_df, 'baro_df': baro_df, 'accelerometer_df': accelerometer_df, 'flight_info_df': flight_info_df,
+    return {'imu_df': imu_df, 'baro_df': baro_df, 'flight_info_df': flight_info_df,
             'orientation_info_df': orientation_info_df, 'filtered_data_info_df': filtered_data_info_df, 'event_info_df': event_info_df,
-            'error_info_df': error_info_df, 'magneto_df': magneto_df, 'flight_states_df': flight_states_df, 'voltage_info_df': voltage_info_df}, plot_output_dir, base_name
+            'error_info_df': error_info_df, 'flight_states_df': flight_states_df, 'voltage_info_df': voltage_info_df}, plot_output_dir, base_name
 
 
 def parse_log(log_b: bytes):
     imu = []
     baro = []
-    accelerometer = []
-    magneto = []
     flight_info = []
     orientation_info = []
     filtered_data_info = []
@@ -274,22 +253,6 @@ def parse_log(log_b: bytes):
                              'P': pressure})
                 # print(baro_data)
                 i += 4 + 4
-            elif t_without_id == REC_TYPE.MAGNETO:
-                mag_x, mag_y, mag_z = struct.unpack(
-                    '<fff', log_b[i: i + 12])
-                magneto.append({'ts': ts,
-                                'Mx': mag_x,
-                                'My': mag_y,
-                                'Mz': mag_z, })
-                i += 4 + 4 + 4
-            elif t_without_id == REC_TYPE.ACCELEROMETER:
-                acc_x, acc_y, acc_z = struct.unpack(
-                    '<bbb', log_b[i: i + 3])
-                accelerometer.append({'ts': ts,
-                                      'Ax': acc_x,
-                                      'Ay': acc_y,
-                                      'Az': acc_z, })
-                i += 1 + 1 + 1
             elif t_without_id == REC_TYPE.FLIGHT_INFO:
                 height, velocity, acceleration = struct.unpack(
                     '<fff', log_b[i: i + 12])
@@ -364,7 +327,7 @@ def parse_log(log_b: bytes):
         print(
             f'Parsing ended at position: {i}/{len(log_b)}\nFirst timestamp: {first_ts / 1000}s; Last timestamp: {last_ts / 1000}s')
 
-    return {'imu': imu, 'baro': baro, 'accelerometer': accelerometer, 'flight_info': flight_info,
+    return {'imu': imu, 'baro': baro, 'flight_info': flight_info,
             'orientation_info': orientation_info, 'filtered_data_info': filtered_data_info,
             'flight_states': flight_states, 'event_info': event_info, 'error_info': error_info,
-            'magneto': magneto, 'voltage_info': voltage_info, 'first_ts': first_ts}
+             'voltage_info': voltage_info, 'first_ts': first_ts}
