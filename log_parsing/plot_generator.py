@@ -236,6 +236,24 @@ def plot_magneto_data(magneto_df, flight_states_df, event_info_df, error_info_df
     return [fig_mx, fig_my, fig_mz]
 
 
+def plot_voltage_data(voltage_info_df, flight_states_df, event_info_df, error_info_df):
+    if 'ts' not in voltage_info_df.columns:
+        return []
+    fig_v = go.Figure()
+    fig_v.add_scatter(
+        x=voltage_info_df.ts, y=voltage_info_df["voltage"], name="voltage", mode="lines"
+    )
+
+    add_flight_states_and_events(fig_v, flight_states_df, event_info_df, error_info_df)
+
+    fig_v.update_layout(
+        title="Battery Voltage",
+        yaxis_title="Voltage [V]",
+        **layout_args,
+    )
+
+    return fig_v
+
 def plot_baro_data(baro_df, flight_states_df, event_info_df, error_info_df):
     fig_temp = go.Figure()
     fig_press = go.Figure()

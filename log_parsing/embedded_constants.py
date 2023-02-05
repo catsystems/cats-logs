@@ -64,6 +64,8 @@ class REC_TYPE(IntEnum):
   FLIGHT_STATE       = 1 << 11  # 0x1000
   EVENT_INFO         = 1 << 12  # 0x2000
   ERROR_INFO         = 1 << 13  # 0x4000
+  GNSS_INFO          = 1 << 14  # 0x8000
+  VOLTAGE_INFO       = 1 << 15  # 0x10000
 
 REC_ID_MASK = 0x0000000F
 

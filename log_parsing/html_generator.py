@@ -33,7 +33,7 @@ HTML_STYLE = """
 
 
 def figures_to_html(
-    imu_plots, baro_plots, accelerometer_plots, magneto_plots, state_plots, filename
+    imu_plots, baro_plots, accelerometer_plots, magneto_plots, voltage_plot, state_plots, filename
 ):
     """Saves a list of plotly figures in an html file."""
 
@@ -125,6 +125,14 @@ def figures_to_html(
         dashboard.write("</div>")
         add_js = False
         i += 1
+
+    dashboard.write("<br/>")
+
+    dashboard.write("<h1>Voltage Data</h1>")
+    inner_html = pyo.plot(voltage_plot, include_plotlyjs=add_js, output_type="div")
+    dashboard.write(f'<div class="container">')
+    dashboard.write(inner_html)
+    dashboard.write("</div>")
 
     dashboard.write("<br/>")
 
