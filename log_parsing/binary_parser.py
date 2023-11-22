@@ -7,6 +7,24 @@ import pandas as pd
 import embedded_constants as EC
 from embedded_constants import REC_TYPE, EVENT_MAP, ERROR_MAP
 
+def read_code_version(byte_buffer):
+    code_version = ""
+    i = 0
+
+    while i < len(byte_buffer):
+        # Unpack the byte at the current index to an unsigned char
+        char_code = struct.unpack_from('B', byte_buffer, i)[0]
+        i += 1
+
+        # Break if null terminator is encountered
+        if char_code == 0:
+            break
+
+        # Convert the byte to a character and append it to the string
+        code_version += chr(char_code)
+
+    print("Code version:", code_version)
+    return i
 
 def read_log(log_path: str, plot_output_dir: str, raw_output_dir: str, processed_output_dir: str) -> str:
 
@@ -218,9 +236,10 @@ def parse_log(log_b: bytes):
     event_info = []
     error_info = []
     voltage_info = []
-    i = 0
     first_ts = -1
     last_ts = -1
+
+    i = read_code_version(log_b)
     try:
         while i < len(log_b):
             ts, t = struct.unpack('<LL', log_b[i:i + 8])
@@ -302,10 +321,10 @@ def parse_log(log_b: bytes):
                                    'error': error})
                 i += 4
             elif t_without_id == REC_TYPE.GNSS_INFO:
-                print(f"GNSS_INFO found at {i}")
+                # print(f"GNSS_INFO found at {i}")
                 i += 9 # no idea if this is correct
             elif t_without_id == REC_TYPE.VOLTAGE_INFO:
-                print(f"VOLTAGE_INFO found at {i}")
+                # print(f"VOLTAGE_INFO found at {i}")
                 voltage = struct.unpack('<H', log_b[i: i + 2])[0]
                 voltage_info.append({'ts': ts,
                                      'voltage': voltage})

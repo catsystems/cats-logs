@@ -35,7 +35,7 @@ HTML_STYLE = """
 def figures_to_html(imu_plots, baro_plots, voltage_plot, state_plots, filename):
     """Saves a list of plotly figures in an html file."""
 
-    dashboard = open(filename, "w")
+    dashboard = open(filename, "w", encoding='utf-8')
     head = f"""<html><head>{HTML_STYLE}<button onclick="body.classList.toggle('light');">Light/Dark</button></head><body><center>\n"""
     dashboard.write(head)
 

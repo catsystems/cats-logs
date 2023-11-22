@@ -2,13 +2,13 @@ from enum import IntEnum
 
 FLIGHT_MAP = {
     0: 'INVALID',
-    1: 'MOVING',
+    1: 'CALIBRATING',
     2: 'READY',
     3: 'THRUSTING',
-    5: 'COASTING',
-    10: 'DROGUE',
-    11: 'MAIN',
-    12: 'TOUCHDOWN',
+    4: 'COASTING',
+    5: 'DROGUE',
+    6: 'MAIN',
+    7: 'TOUCHDOWN',
     #0x7FFFFFFF: 'HEHE2'
 }
 
