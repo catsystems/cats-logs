@@ -111,6 +111,7 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
     flight_states = log_dict['flight_states']
     event_info = log_dict['event_info']
     error_info = log_dict['error_info']
+    gnss_info = log_dict['gnss_info']
     voltage_info = log_dict['voltage_info']
     first_ts = log_dict['first_ts']
 
@@ -122,6 +123,7 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
     event_info_df = pd.DataFrame(event_info)
     error_info_df = pd.DataFrame(error_info)
     flight_states_df = pd.DataFrame(flight_states)
+    gnss_info_df = pd.DataFrame(gnss_info)
     voltage_info_df = pd.DataFrame(voltage_info)
 
 
@@ -138,6 +140,8 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
     error_info_df.to_csv(f'{raw_output_dir}/{base_name} - error_info_raw.csv')
     flight_states_df.to_csv(
         f'{raw_output_dir}/{base_name} - flight_states_raw.csv')
+    gnss_info_df.to_csv(
+        f'{raw_output_dir}/{base_name} - gnss_info_raw.csv')
     voltage_info_df.to_csv(
         f'{raw_output_dir}/{base_name} - voltage_info_raw.csv')
     orientation_info_df
@@ -161,6 +165,7 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
     offset_col(flight_info_df, 'ts', zero_ts)
     offset_col(filtered_data_info_df, 'ts', zero_ts)
     offset_col(voltage_info_df, 'ts', zero_ts)
+    offset_col(gnss_info_df, 'ts', zero_ts)
 
     scale_col(imu_df, 'ts', 1000)
     scale_col(baro_df, 'ts', 1000)
@@ -168,6 +173,7 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
     scale_col(flight_info_df, 'ts', 1000)
     scale_col(filtered_data_info_df, 'ts', 1000)
     scale_col(voltage_info_df, 'ts', 1000)
+    scale_col(gnss_info_df, 'ts', 1000)
 
     if len(event_info_df) > 0:
         offset_col(event_info_df, 'ts', zero_ts)
@@ -218,12 +224,14 @@ def extract_data(input_log_path: str, output_log_path: str, state_map: Dict[int,
         f'{processed_output_dir}/{base_name} - error_info_processed.csv')
     flight_states_df.to_csv(
         f'{processed_output_dir}/{base_name} - flight_states_processed.csv')
+    gnss_info_df.to_csv(
+        f'{processed_output_dir}/{base_name} - gnss_info_processed.csv')
     voltage_info_df.to_csv(
         f'{processed_output_dir}/{base_name} - voltage_info_processed.csv')
 
     return {'imu_df': imu_df, 'baro_df': baro_df, 'flight_info_df': flight_info_df,
             'orientation_info_df': orientation_info_df, 'filtered_data_info_df': filtered_data_info_df, 'event_info_df': event_info_df,
-            'error_info_df': error_info_df, 'flight_states_df': flight_states_df, 'voltage_info_df': voltage_info_df}, plot_output_dir, base_name
+            'error_info_df': error_info_df, 'flight_states_df': flight_states_df, 'gnss_info_df': gnss_info_df, 'voltage_info_df': voltage_info_df}, plot_output_dir, base_name
 
 
 def parse_log(log_b: bytes):
@@ -235,6 +243,7 @@ def parse_log(log_b: bytes):
     flight_states = []
     event_info = []
     error_info = []
+    gnss_info = []
     voltage_info = []
     first_ts = -1
     last_ts = -1
@@ -322,7 +331,12 @@ def parse_log(log_b: bytes):
                 i += 4
             elif t_without_id == REC_TYPE.GNSS_INFO:
                 # print(f"GNSS_INFO found at {i}")
-                i += 9 # no idea if this is correct
+                latitude, longitude, satellites = struct.unpack('<ffB', log_b[i: i + 9])
+                gnss_info.append({'ts': ts,
+                                  'latitude': latitude,
+                                  'longitude': longitude,
+                                  'satellites': satellites})
+                i += 9
             elif t_without_id == REC_TYPE.VOLTAGE_INFO:
                 # print(f"VOLTAGE_INFO found at {i}")
                 voltage = struct.unpack('<H', log_b[i: i + 2])[0]
@@ -348,5 +362,5 @@ def parse_log(log_b: bytes):
 
     return {'imu': imu, 'baro': baro, 'flight_info': flight_info,
             'orientation_info': orientation_info, 'filtered_data_info': filtered_data_info,
-            'flight_states': flight_states, 'event_info': event_info, 'error_info': error_info,
+            'flight_states': flight_states, 'event_info': event_info, 'error_info': error_info, 'gnss_info': gnss_info,
              'voltage_info': voltage_info, 'first_ts': first_ts}
