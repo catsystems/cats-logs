@@ -2,10 +2,10 @@
 
 import argparse
 
-from embedded_constants import FLIGHT_MAP
-from plot_generator import *
-from html_generator import *
-import binary_parser
+from catslogs import binary_parser
+from catslogs.embedded_constants import FLIGHT_MAP
+from catslogs.html_generator import *
+from catslogs.plot_generator import *
 
 
 def main(args):

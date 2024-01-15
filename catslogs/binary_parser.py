@@ -1,11 +1,12 @@
-import struct
 import os
+import struct
 from typing import Dict
 
 import pandas as pd
 
-import embedded_constants as EC
-from embedded_constants import REC_TYPE, EVENT_MAP, ERROR_MAP
+import catslogs.embedded_constants as EC
+from catslogs.embedded_constants import ERROR_MAP, EVENT_MAP, REC_TYPE
+
 
 def read_code_version(byte_buffer):
     code_version = ""
