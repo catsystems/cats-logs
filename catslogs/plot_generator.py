@@ -1,8 +1,7 @@
-import plotly.graph_objs as go
 import numpy as np
+import plotly.graph_objs as go
 
-from embedded_constants import ERROR_MAP
-
+from catslogs.embedded_constants import ERROR_MAP
 
 layout_font = dict(family="Courier New, monospace", size=12)
 
